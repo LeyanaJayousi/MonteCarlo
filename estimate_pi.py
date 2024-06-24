@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def initialize_plots():
-    fig, axis = plt.subplots(1, 2, figsize=(12, 6))
+    fig, axis = plt.subplots(1, 3, figsize=(12, 6))
     
     # Plot for estimated Pi value
     axis[0].set_title('Estimating Pi Value')
@@ -18,7 +18,7 @@ def initialize_plots():
     
     return fig, axis
 
-def update_plots(axis, xdots, ydots, dotsloc, pi_values, cnt, total_dots):
+def update_plots(axis, xdots, ydots, dotsloc, pi_values, cnt, total_dots, epsilon_values, num_samples_list):
     
     axis[0].clear()
     axis[0].plot(range(1, len(pi_values) + 1), pi_values, color='black')
@@ -33,6 +33,26 @@ def update_plots(axis, xdots, ydots, dotsloc, pi_values, cnt, total_dots):
     axis[1].set_aspect('equal')
     axis[1].set_xlim([-1, 1])
     axis[1].set_ylim([-1, 1])
+    
+    axis[2].clear()
+    axis[2].plot(epsilon_values, num_samples_list, marker='o', linewidth=1.5)  
+    axis[2].set_title('Epsilon vs. Number of Samples')
+    axis[2].set_xlabel('Epsilon (|Estimated Pi - True Pi|)')
+    axis[2].set_ylabel('Number of Samples')
+    axis[2].grid(True)
+    
+   
+    axis[2].text(0.95, 0.95, f'Precision: {epsilon_values[-1]:.6f}',
+                 transform=axis[2].transAxes, 
+                 fontsize=10, 
+                 verticalalignment='top', 
+                 horizontalalignment='right')
+    
+    axis[2].text(0.95, 0.90, f'Iteration: {num_samples_list[-1]}', 
+                 transform=axis[2].transAxes, 
+                 fontsize=10, 
+                 verticalalignment='top', 
+                 horizontalalignment='right')
 
     plt.draw()
     plt.pause(0.01)
@@ -42,6 +62,8 @@ def estimate_pi(num_samples=100000, update_interval=100):
     
     xdots, ydots, dotsloc, pi_values = [], [], [], []
     cnt = 0
+    epsilon_values = []
+    num_samples_list = []
     
     for i in range(1, num_samples + 1):
         x, y = np.random.uniform(-1, 1, 2)
@@ -58,10 +80,16 @@ def estimate_pi(num_samples=100000, update_interval=100):
         pi_value = 4 * (cnt / i)
         pi_values.append(pi_value)
         
+        # Calculate epsilon
+        epsilon = np.abs(pi_value - np.pi)
+        epsilon_values.append(epsilon)
+        
+        # Track number of samples
+        num_samples_list.append(i)
+        
         if i % update_interval == 0:
-            update_plots(axis, xdots, ydots, dotsloc, pi_values, cnt, i)
+            update_plots(axis, xdots, ydots, dotsloc, pi_values, cnt, i, epsilon_values, num_samples_list)
     
     plt.show()
-
 
 estimate_pi()
